@@ -1,160 +1,185 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { computed, onMounted, ref } from "vue";
+import CalendarPage from "./pages/CalendarPage.vue";
+import TimetablePage from "./pages/TimetablePage.vue";
+import { useStore } from "./composables/useStore";
 
-const greetMsg = ref("");
-const name = ref("");
+const { load } = useStore();
 
-async function greet() {
-  // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-  greetMsg.value = await invoke("greet", { name: name.value });
-}
+// 侧边栏导航项，新增页面时在这里加一条即可
+const pages = [
+  { key: "calendar", label: "日历", icon: "📅", component: CalendarPage },
+  { key: "timetable", label: "课程表", icon: "📋", component: TimetablePage },
+] as const;
+
+const current = ref<string>(pages[0].key);
+const currentComponent = computed(
+  () => pages.find((p) => p.key === current.value)?.component ?? CalendarPage,
+);
+
+onMounted(load);
 </script>
 
 <template>
-  <main class="container">
-    <h1>Welcome to Tauri + Vue</h1>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-icon">📘</span>
+        <span class="brand-name">课时收入记录</span>
+      </div>
 
-    <div class="row">
-      <a href="https://vite.dev" target="_blank">
-        <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-      </a>
-      <a href="https://tauri.app" target="_blank">
-        <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-      </a>
-      <a href="https://vuejs.org/" target="_blank">
-        <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-      </a>
-    </div>
-    <p>Click on the Tauri, Vite, and Vue logos to learn more.</p>
+      <nav class="nav">
+        <button
+          v-for="p in pages"
+          :key="p.key"
+          class="nav-item"
+          :class="{ active: current === p.key }"
+          @click="current = p.key"
+        >
+          <span class="nav-icon">{{ p.icon }}</span>
+          <span>{{ p.label }}</span>
+        </button>
+      </nav>
+    </aside>
 
-    <form class="row" @submit.prevent="greet">
-      <input id="greet-input" v-model="name" placeholder="Enter a name..." />
-      <button type="submit">Greet</button>
-    </form>
-    <p>{{ greetMsg }}</p>
-  </main>
+    <main class="content">
+      <component :is="currentComponent" />
+    </main>
+  </div>
 </template>
 
-<style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
-}
-
-</style>
 <style>
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+  --bg: #f4f6fb;
+  --panel: #ffffff;
+  --text: #1f2430;
+  --muted: #8a93a6;
+  --line: #e6e9f0;
+  --accent: #4f6ef7;
+  --accent-soft: #eef1ff;
+  --money: #16a34a;
+  --danger: #e5484d;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  background-color: var(--bg);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
 }
 
-.container {
+* {
+  box-sizing: border-box;
+}
+
+body {
   margin: 0;
-  padding-top: 10vh;
+}
+
+/* 按钮（全局，各页面与组件共用） */
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--accent-soft);
+  color: var(--accent);
+  transition: filter 0.15s;
+}
+.btn:hover {
+  filter: brightness(0.96);
+}
+.btn.primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn.ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.btn.danger {
+  background: #fdecec;
+  color: var(--danger);
+}
+
+/* 整体布局：侧边栏用 fixed 钉在视口上，页面滚动时不会跟着动 */
+.layout {
+  min-height: 100vh;
+}
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 190px;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  padding: 20px 12px;
+  overflow-y: auto;
+  z-index: 20;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.brand-icon {
+  font-size: 18px;
+}
+.nav {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  text-align: center;
+  gap: 4px;
 }
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
+.nav-item {
   display: flex;
-  justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  text-align: center;
-}
-
-input,
-button {
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
   font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-button {
+  text-align: left;
   cursor: pointer;
+  transition: background 0.15s;
+}
+.nav-item:hover {
+  background: var(--accent-soft);
+}
+.nav-item.active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.nav-icon {
+  font-size: 16px;
+}
+.content {
+  margin-left: 190px;
+  min-height: 100vh;
 }
 
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
-}
-
-input,
-button {
-  outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
+@media (max-width: 760px) {
+  .sidebar {
+    position: static;
+    width: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    overflow-y: visible;
   }
-
-  a:hover {
-    color: #24c8db;
+  .content {
+    margin-left: 0;
   }
-
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
-  button:active {
-    background-color: #0f0f0f69;
+  .nav {
+    flex-direction: row;
   }
 }
-
 </style>

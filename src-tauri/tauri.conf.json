@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "rust-super-schedule",
-        "width": 800,
-        "height": 600
+        "title": "课时收入记录",
+        "width": 1100,
+        "height": 760,
+        "minWidth": 1000,
+        "minHeight": 640
       }
     ],
     "security": {
