@@ -3,8 +3,9 @@ import { computed } from "vue";
 import { fmtMoney } from "../utils";
 
 const props = defineProps<{
-  todayStr: string;
-  todayIncome: number;
+  /** 当前选中的日期；下面三张卡片的统计都跟着它走，而不是「今天」 */
+  date: string;
+  dayIncome: number;
   monthIncome: number;
   yearIncome: number;
   rangeIncome: number;
@@ -30,22 +31,33 @@ const rangeEndModel = computed({
   get: () => props.rangeEnd,
   set: (v: string) => emit("update:rangeEnd", v),
 });
+
+// 标题直接写明是哪一段：选中别的日期后还写「本日」就名不副实了
+const dayLabel = computed(() => {
+  const [, m, d] = props.date.split("-");
+  return `${Number(m)}月${Number(d)}日`;
+});
+const monthLabel = computed(() => {
+  const [y, m] = props.date.split("-");
+  return `${y}年${Number(m)}月`;
+});
+const yearLabel = computed(() => `${props.date.slice(0, 4)}年`);
 </script>
 
 <template>
   <section class="stats">
-    <div class="stat-card" @click="emit('open-day', todayStr)">
-      <span class="stat-label">本日</span>
-      <span class="stat-value">{{ fmtMoney(todayIncome) }} 元</span>
+    <div class="stat-card" @click="emit('open-day', date)">
+      <span class="stat-label">{{ dayLabel }}</span>
+      <span class="stat-value">{{ fmtMoney(dayIncome) }} 元</span>
       <span class="stat-hint">点击查看计算过程</span>
     </div>
     <div class="stat-card" @click="emit('open-month')">
-      <span class="stat-label">本月</span>
+      <span class="stat-label">{{ monthLabel }}</span>
       <span class="stat-value">{{ fmtMoney(monthIncome) }} 元</span>
       <span class="stat-hint">点击查看计算过程</span>
     </div>
     <div class="stat-card" @click="emit('open-year')">
-      <span class="stat-label">本年</span>
+      <span class="stat-label">{{ yearLabel }}</span>
       <span class="stat-value">{{ fmtMoney(yearIncome) }} 元</span>
       <span class="stat-hint">点击查看计算过程</span>
     </div>

@@ -86,31 +86,24 @@ export function useSchedule() {
     () => `${selectedDate.value} ${weekdayName(selectedDate.value)}`,
   );
 
-  function addEntry(entry: Entry) {
-    setEntries(selectedDate.value, [...selectedEntries.value, entry]);
-  }
-
-  function removeEntry(index: number) {
-    setEntries(selectedDate.value, selectedEntries.value.filter((_, i) => i !== index));
-  }
-
-  function onEntryChange() {
-    void store.persist();
+  /** 录入面板改完一行就整份覆盖；setDayEntries 内部已经落盘 */
+  function replaceEntries(entries: Entry[]) {
+    setEntries(selectedDate.value, entries);
   }
 
   // ---------- 统计 ----------
   function daysInRange(pred: (date: string) => boolean): DayStat[] {
     return store
       .allDays()
-      .filter(([date]) => pred(date))
+      // 收入为 0 的天（历史数据里留下的空数组，或只填了备注）不进统计明细
+      .filter(([date, entries]) => pred(date) && dayIncome(entries) > 0)
       .map(([date, entries]) => ({ date, entries }))
       .sort((a, b) => a.date.localeCompare(b.date));
   }
 
-  const todayIncome = computed(() => dayIncome(entriesOf(todayStr.value)));
-
+  // 顶部三张卡片跟着选中的日期走，而不是死盯「今天」
   const monthStats = computed(() => {
-    const prefix = todayStr.value.slice(0, 7);
+    const prefix = selectedDate.value.slice(0, 7);
     return daysInRange((d) => d.startsWith(prefix));
   });
   const monthIncome = computed(() =>
@@ -118,7 +111,7 @@ export function useSchedule() {
   );
 
   const yearStats = computed(() => {
-    const prefix = todayStr.value.slice(0, 4);
+    const prefix = selectedDate.value.slice(0, 4);
     return daysInRange((d) => d.startsWith(prefix));
   });
   const yearIncome = computed(() =>
@@ -149,7 +142,6 @@ export function useSchedule() {
   }
 
   return {
-    todayStr,
     selectedDate,
     rangeStart,
     rangeEnd,
@@ -159,16 +151,13 @@ export function useSchedule() {
     selectedEntries,
     selectedIncome,
     selectedTitle,
-    todayIncome,
     monthStats,
     monthIncome,
     yearStats,
     yearIncome,
     rangeStats,
     rangeIncome,
-    addEntry,
-    removeEntry,
-    onEntryChange,
+    replaceEntries,
     prevMonth,
     nextMonth,
     goToday,

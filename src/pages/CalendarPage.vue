@@ -6,7 +6,6 @@ import CalcModal from "../components/CalcModal.vue";
 import { useSchedule } from "../composables/useSchedule";
 
 const {
-  todayStr,
   selectedDate,
   rangeStart,
   rangeEnd,
@@ -16,16 +15,13 @@ const {
   selectedEntries,
   selectedIncome,
   selectedTitle,
-  todayIncome,
   monthStats,
   monthIncome,
   yearStats,
   yearIncome,
   rangeStats,
   rangeIncome,
-  addEntry,
-  removeEntry,
-  onEntryChange,
+  replaceEntries,
   prevMonth,
   nextMonth,
   goToday,
@@ -39,8 +35,8 @@ const {
 <template>
   <div class="page">
     <StatsPanel
-      :today-str="todayStr"
-      :today-income="todayIncome"
+      :date="selectedDate"
+      :day-income="selectedIncome"
       :month-income="monthIncome"
       :year-income="yearIncome"
       :range-income="rangeIncome"
@@ -66,9 +62,7 @@ const {
         :title="selectedTitle"
         :entries="selectedEntries"
         :income="selectedIncome"
-        @add="addEntry"
-        @remove="removeEntry"
-        @change="onEntryChange"
+        @update="replaceEntries"
         @show-detail="openDayDetail(selectedDate)"
       />
     </div>

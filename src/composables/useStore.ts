@@ -30,7 +30,11 @@ export function useStore() {
   }
 
   function setDayEntries(date: string, entries: Entry[]) {
-    data.value = { ...data.value, days: { ...data.value.days, [date]: entries } };
+    // 清空最后一条记录时把这一天整个删掉，不留下空壳
+    const days = { ...data.value.days };
+    if (entries.length) days[date] = entries;
+    else delete days[date];
+    data.value = { ...data.value, days };
     void persist();
   }
 

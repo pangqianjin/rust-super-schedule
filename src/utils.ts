@@ -22,10 +22,11 @@ export function dayIncome(entries: Entry[]): number {
   return entries.reduce((sum, e) => sum + PRICE[e.kind] * e.count, 0);
 }
 
-// 计算过程：把一天的课程拆成逐条算式
+// 计算过程：把一天的课程拆成逐条算式；收入为 0 的行（比如只填了备注）不展示
 export function entryLines(entries: Entry[]): string[] {
-  if (!entries.length) return ["未记录课程"];
-  return entries.map((e) => {
+  const billable = entries.filter((e) => PRICE[e.kind] * e.count > 0);
+  if (!billable.length) return ["未记录课程"];
+  return billable.map((e) => {
     const label = KIND_LABEL[e.kind];
     const price = PRICE[e.kind];
     let line = `${label} × ${e.count} 节 × ${price} 元 = ${price * e.count} 元`;

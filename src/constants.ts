@@ -13,8 +13,8 @@ export const KIND_LABEL: Record<Kind, string> = {
   evening: "晚自习",
 };
 
-// 下拉选项的显示顺序
-export const KIND_OPTIONS: Kind[] = ["day", "morning", "evening"];
+// 日历页右侧录入面板的显示顺序，按一天的时间先后排列
+export const KIND_ORDER: Kind[] = ["morning", "day", "evening"];
 
 // getDay() 返回 0=周日，以此类推
 export const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
