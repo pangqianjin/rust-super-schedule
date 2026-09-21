@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "课时收入记录",
+        "title": "超级课程表",
         "width": 1100,
         "height": 760,
         "minWidth": 1000,

@@ -25,7 +25,7 @@ onMounted(load);
     <aside class="sidebar">
       <div class="brand">
         <span class="brand-icon">📘</span>
-        <span class="brand-name">课时收入记录</span>
+        <span class="brand-name">超级课程表</span>
       </div>
 
       <nav class="nav">
