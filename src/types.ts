@@ -9,6 +9,17 @@ export interface Entry {
   note: string;
 }
 
+/** 单月收入的分解结果，供统计与计算过程弹窗复用 */
+export interface MonthIncome {
+  subsidy: number; // 政府补贴 1780
+  hours: number; // 当月总课时
+  deductHours: number; // 每月固定扣除 32
+  billableHours: number; // hours - 32，可为负
+  rawFee: number; // billableHours × 单价，可为负
+  schoolFee: number; // max(MIN_SCHOOL_FEE, rawFee)
+  total: number; // subsidy + schoolFee
+}
+
 /** 课程表上的一个格子。课型由所在行决定，不单独存。 */
 export interface Slot {
   /** 备注，比如班级名称 */

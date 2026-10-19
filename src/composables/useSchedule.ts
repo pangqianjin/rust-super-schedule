@@ -1,6 +1,6 @@
 import { computed, ref } from "vue";
 import type { DayCell, DayStat, Entry, ModalState } from "../types";
-import { buildDayGroup, dayIncome, toDateStr, weekdayName } from "../utils";
+import { buildDayGroup, buildMonthGroup, dayIncome, monthIncome as calcMonthIncome, toDateStr, weekdayName } from "../utils";
 import { useStore } from "./useStore";
 
 const store = useStore();
@@ -17,6 +17,25 @@ const viewMonth = ref(now.getMonth()); // 0-11
 const rangeStart = ref(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`);
 const rangeEnd = ref(todayStr.value);
 const modal = ref<ModalState | null>(null);
+
+// 把按天数据按自然月分组，用于「按月分别折算」统计
+function monthGroupsOf(stats: DayStat[]): Array<{ month: string; entries: Entry[] }> {
+  const map = new Map<string, Entry[]>();
+  for (const s of stats) {
+    const month = s.date.slice(0, 7);
+    const arr = map.get(month) ?? [];
+    arr.push(...s.entries);
+    map.set(month, arr);
+  }
+  return [...map.entries()]
+    .map(([month, entries]) => ({ month, entries }))
+    .sort((a, b) => a.month.localeCompare(b.month));
+}
+
+// 按月分别折算：每个月套月收入公式后累加
+function sumMonths(stats: DayStat[]): number {
+  return monthGroupsOf(stats).reduce((sum, { entries }) => sum + calcMonthIncome(entries).total, 0);
+}
 
 export function useSchedule() {
   // ---------- 数据读写 ----------
@@ -106,24 +125,18 @@ export function useSchedule() {
     const prefix = selectedDate.value.slice(0, 7);
     return daysInRange((d) => d.startsWith(prefix));
   });
-  const monthIncome = computed(() =>
-    monthStats.value.reduce((s, x) => s + dayIncome(x.entries), 0),
-  );
+  const monthIncome = computed(() => sumMonths(monthStats.value));
 
   const yearStats = computed(() => {
     const prefix = selectedDate.value.slice(0, 4);
     return daysInRange((d) => d.startsWith(prefix));
   });
-  const yearIncome = computed(() =>
-    yearStats.value.reduce((s, x) => s + dayIncome(x.entries), 0),
-  );
+  const yearIncome = computed(() => sumMonths(yearStats.value));
 
   const rangeStats = computed(() =>
     daysInRange((d) => d >= rangeStart.value && d <= rangeEnd.value),
   );
-  const rangeIncome = computed(() =>
-    rangeStats.value.reduce((s, x) => s + dayIncome(x.entries), 0),
-  );
+  const rangeIncome = computed(() => sumMonths(rangeStats.value));
 
   // ---------- 计算过程弹窗 ----------
   function openDayDetail(dateStr: string) {
@@ -132,7 +145,7 @@ export function useSchedule() {
   }
 
   function openStatsDetail(title: string, stats: DayStat[]) {
-    const groups = stats.map((s) => buildDayGroup(s.date, s.entries));
+    const groups = monthGroupsOf(stats).map(({ month, entries }) => buildMonthGroup(month, entries));
     const total = groups.reduce((s, g) => s + g.total, 0);
     modal.value = { title, groups, total };
   }

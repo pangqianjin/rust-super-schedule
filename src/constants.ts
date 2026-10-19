@@ -2,10 +2,16 @@ import type { BlockDef, Kind, WeekdayKey } from "./types";
 
 // 每种课对应的价格（元）
 export const PRICE: Record<Kind, number> = {
-  morning: 6,
-  day: 18,
-  evening: 18,
+  morning: 10,
+  day: 10,
+  evening: 10,
 };
+
+// 收入规则：月收入 = 政府补贴（固定）+ 学校课时费（保底）
+export const SUBSIDY = 1780; // 政府补贴（元/月，固定）
+export const WEEKLY_FREE_PERIODS = 8; // 每周固定扣除课时数
+export const MONTHLY_FREE_PERIODS = 32; // 每月固定扣除课时 = 8 × 4
+export const MIN_SCHOOL_FEE = 300; // 学校课时费保底（元/月）
 
 export const KIND_LABEL: Record<Kind, string> = {
   morning: "早自习",

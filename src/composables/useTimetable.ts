@@ -38,7 +38,7 @@ export function useTimetable() {
   /** 每周总课时 */
   const totalPeriods = computed(() => keys.value.length);
 
-  /** 每周固定收入：早自习 6 元，其余每节 18 元 */
+  /** 每周固定收入：每节 10 元 */
   function incomeOf(key: string): number {
     const kind = PERIOD_KIND[periodIdOf(key)];
     return kind ? PRICE[kind] : 0;

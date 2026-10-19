@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use tauri::Manager;
 
-/// 一节课的类型：morning = 早自习（6 元），day = 白天课（18 元），evening = 晚自习（18 元）
+/// 一节课的类型：morning = 早自习，day = 白天课，evening = 晚自习
 #[derive(Serialize, Deserialize, Clone, Default)]
 struct LessonEntry {
     kind: String,
